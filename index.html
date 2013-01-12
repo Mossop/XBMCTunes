@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<link rel="stylesheet" type="text/css" href="styles/reset.css">
+<link rel="stylesheet" type="text/css" href="styles/layout.css">
+<script type="application/javascript" src="scripts/promise.js"></script>
+<script type="application/javascript" src="scripts/xbmc.js"></script>
+<script type="application/javascript" src="scripts/ui.js"></script>
+</head>
+<body onload="init()" onunload="destroy()" id="main">
+  <div id="playback">
+    <div id="controls">
+      <button>Prev</button>
+      <button>Play</button>
+      <button>Next</button>
+    </div>
+    <div id="nowplaying"></div>
+    <div id="search"></div>
+  </div>
+  <div id="sectionbar">
+    <ul id="sections">
+      <li class="music" id="section-albums"><a onclick="MainUI.showAlbums(); return false;">Albums</a></li>
+      <li class="music" id="section-artists"><a onclick="MainUI.showArtists(); return false;">Artists</a></li>
+      <li class="music" id="section-genres"><a onclick="MainUI.showGenres(); return false;">Genres</a></li>
+      <li class="video" id="section-movies"><a onclick="MainUI.showMovies(); return false;">Movies</a></li>
+      <li class="video" id="section-tv"><a onclick="MainUI.showTV(); return false;">TV</a></li>
+    </ul>
+  </div>
+  <div id="content">
+    <div id="library-list">
+      <ul class="scrollbox"></ul>
+    </div>
+    <div id="library">
+      <div class="scrollbox"></div>
+    </div>
+    <div id="playlist">
+      <ul class="scrollbox"></ul>
+    </div>
+  </div>
+</body>
+</html>

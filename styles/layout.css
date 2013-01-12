@@ -1,0 +1,133 @@
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  width: 100%;
+  font-family: Tahoma, sans-serif;
+  font-size: 90%
+}
+
+#main {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+#playback {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 10px 30px 10px 30px;
+  background: linear-gradient(to top, #c7c7c7, #efefef);
+  border-bottom: 1px solid #7b7b7b;
+}
+
+#controls {
+  flex: 1;
+}
+
+#nowplaying {
+  flex: 1;
+  background: grey;
+}
+
+#search {
+  flex: 1;
+}
+
+#sectionbar {
+  background: #f4f4f4;
+  border-bottom: 1px solid #bbbbbb;
+}
+
+#sections {
+  text-align: center;
+  padding: 5px;
+  font-size: 90%;
+}
+
+#sections li {
+  color: #494949;
+  display: inline;
+  font-weight: bold;
+  border: 1px solid transparent;
+  border-radius: 14px;
+}
+
+#sections a {
+  display: inline-block;
+  cursor: pointer;
+  padding: 3px 7px 3px 7px;
+}
+
+#sections .selected {
+  border-color: #d3d3d3;
+  border-top-color: #999898;
+  background: #e3e1e0;
+}
+
+#content {
+  flex: 1;
+  display: flex;
+  flex-direction: row;
+}
+
+#library-list {
+  width: 300px;
+  background-color: #f4f4f4;
+  border-right: 1px solid #bbbbbb;
+  position: relative;
+}
+
+.hidden {
+  display: none;
+}
+
+.loading {
+  background-image: url("../images/loading.png");
+  background-position: center center;
+  background-repeat: no-repeat;
+}
+
+#library-list a {
+  display: block;
+  padding: 5px 15px 5px 15px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+#library-list .selected a {
+  color: #ffffff;
+  background: #9db8d8;
+}
+
+.list-thumbnail {
+  vertical-align: middle;
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  min-height: 32px;
+  padding-right: 10px;
+}
+
+.scrollbox {
+  overflow-y: auto;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+#library {
+  flex: 1;
+  background-color: #fbfbfb;
+  position: relative;
+}
+
+#playlist {
+  width: 300px;
+  background: #f4f4f4;
+  border-left: 1px solid #bbbbbb;
+  position: relative;
+}
