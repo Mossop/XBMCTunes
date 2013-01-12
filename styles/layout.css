@@ -89,11 +89,16 @@ html, body {
   background-repeat: no-repeat;
 }
 
+#library-list li {
+}
+
 #library-list a {
-  display: block;
   padding: 5px 15px 5px 15px;
   font-weight: bold;
   cursor: pointer;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
 }
 
 #library-list .selected a {
@@ -101,13 +106,20 @@ html, body {
   background: #9db8d8;
 }
 
-.list-thumbnail {
-  vertical-align: middle;
+.list-image {
   width: 32px;
   height: 32px;
-  min-width: 32px;
-  min-height: 32px;
   padding-right: 10px;
+  text-align: center;
+}
+
+.list-thumbnail {
+  max-width: 32px;
+  max-height: 32px;
+}
+
+.list-title {
+  flex: 1;
 }
 
 .scrollbox {
@@ -123,6 +135,44 @@ html, body {
   flex: 1;
   background-color: #fbfbfb;
   position: relative;
+}
+
+#library .scrollbox {
+  padding-bottom: 20px;
+}
+
+.album {
+  clear: left;
+  padding: 20px 20px 0 20px;
+}
+
+.album-thumbnail {
+  display: block;
+  width: 128px;
+  height: 128px;
+  border: 1px solid black;
+  float: left;
+}
+
+.album-header {
+  margin-left: 148px;
+  padding-bottom: 5px;
+  margin-bottom: 10px;
+  border-bottom: 1px solid #c0c0c0
+}
+
+.album-title {
+  font-size: 120%;
+  font-weight: bold;
+  padding-right: 10px;
+}
+
+.album-artist {
+  color: grey;
+}
+
+.album-tracks {
+  margin-left: 148px;
 }
 
 #playlist {

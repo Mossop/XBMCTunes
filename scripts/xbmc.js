@@ -1,11 +1,27 @@
 function Connection(socket) {
   this.socket = socket;
+  this.id = 1;
+  this.queue = [];
+  this.locked = false;
 }
 
 Connection.prototype = {
-  send: function(method, params) {
-    var deferred = promise.defer();
-    var id = Date.now();
+  socket: null,
+  locked: null,
+  queue: null,
+  id: null,
+
+  runQueue: function() {
+    if (this.locked)
+      return;
+
+    if (this.queue.length == 0)
+      return;
+
+    this.locked = true;
+    [deferred, method, params] = this.queue.shift();
+
+    var id = this.id++;
 
     this.socket.addEventListener("message", function(event) {
       var msg = JSON.parse(event.data);
@@ -13,17 +29,20 @@ Connection.prototype = {
       if (msg.id != id)
         return;
       console.log("Socket received response for " + msg.id);
-
       this.socket.removeEventListener("message", arguments.callee, false);
 
       if ("result" in msg) {
         deferred.resolve(msg.result);
+        this.locked = false;
+        this.runQueue();
         return;
       }
 
-      var error = ("error" in msg) ? msg.error : undefined;
+      var error = ("error" in msg) ? msg.error.message : undefined;
       console.error("Error: " + error);
       deferred.reject(error);
+      this.locked = false;
+      this.runQueue();
     }.bind(this), false);
 
     var msg = {
@@ -37,7 +56,13 @@ Connection.prototype = {
 
     console.log("Socket sending " + JSON.stringify(msg))
     this.socket.send(JSON.stringify(msg));
+  },
 
+  send: function(method, params) {
+    var deferred = promise.defer();
+
+    this.queue.push([deferred, method, params]);
+    this.runQueue();
     return deferred.promise;
   }
 };
@@ -126,7 +151,21 @@ var XBMC = {
 
   getAlbums: function(filter) {
     return this.getList("AudioLibrary.GetAlbums", "albums", {
+      properties: ["thumbnail", "displayartist"],
       filter: filter
+    });
+  },
+
+  getSongs: function(filter) {
+    return this.getList("AudioLibrary.GetSongs", "songs", {
+      properties: ["title", "artist", "track", "disc", "duration"],
+      filter: filter
+    }).then(function(songs) {
+      return songs.sort(function(a, b) {
+        if (a.disc != b.disc)
+          return a.disc - b.disc;
+        return a.track - b.track;
+      });
     });
   },
 

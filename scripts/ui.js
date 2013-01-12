@@ -1,3 +1,10 @@
+function makeEl(tag, className) {
+  var el = document.createElement(tag);
+  if (className)
+    el.setAttribute("class", className);
+  return el;
+}
+
 var MainUI = {
   list: null,
   library: null,
@@ -27,7 +34,48 @@ var MainUI = {
     });
   },
 
+  showAlbumLibrary: function(albums) {
+    this.library.parentNode.classList.remove("loading");
+
+    function fillTracks(div, album) {
+      var tracks = makeEl("ol", "album-tracks");
+      div.appendChild(tracks);
+      
+      XBMC.getSongs({ albumid: album.albumid }).then(function(songs) {
+        for (var i = 0; i < songs.length; i++) {
+          var track = makeEl("li");
+          track.textContent = songs[i].track + ": " + songs[i].label;
+          tracks.appendChild(track);
+        }
+      });
+    }
+
+    for (var i = 0; i < albums.length; i++) {
+      var div = makeEl("div", "album");
+
+      var thumb = makeEl("img", "album-thumbnail");
+      thumb.setAttribute("src", XBMC.decodeImage(albums[i].thumbnail));
+      div.appendChild(thumb);
+
+      var header = makeEl("p", "album-header");
+      div.appendChild(header);
+
+      var title = makeEl("span", "album-title");
+      title.textContent = albums[i].label;
+      header.appendChild(title);
+
+      var artist = makeEl("span", "album-artist");
+      artist.textContent = "By " + albums[i].displayartist;
+      header.appendChild(artist);
+
+      fillTracks(div, albums[i]);
+
+      this.library.appendChild(div);
+    }
+  },
+
   populateArtistLibrary: function(artist) {
+    return XBMC.getAlbums({ artistid: artist.artistid }).then(this.showAlbumLibrary.bind(this));
   },
 
   showGenres: function() {
@@ -41,6 +89,7 @@ var MainUI = {
   },
 
   populateGenreLibrary: function(genre) {
+    return XBMC.getAlbums({ genreid: genre.genreid }).then(this.showAlbumLibrary.bind(this));
   },
 
   showTV: function() {
@@ -80,6 +129,8 @@ var MainUI = {
       last[i].classList.remove("selected");
 
     listitem.classList.add("selected");
+    this.prepareLibrary();
+    this.library.parentNode.classList.add("loading");
     this.libraryCallback.call(this, item);
   },
 
@@ -103,16 +154,22 @@ var MainUI = {
     this.list.parentNode.classList.remove("loading");
 
     for (var i = 0; i < items.length; i++) {
-      var item = document.createElement("li");
-      item.setAttribute("class", "list-" + type);
+      var item = makeEl("li", "list-" + type);
 
-      var link = document.createElement("a");
+      var link = makeEl("a");
       item.appendChild(link);
-      var thumbnail = document.createElement("img");
-      thumbnail.setAttribute("class", "list-thumbnail");
+
+      var imagebox = makeEl("div", "list-image");
+      link.appendChild(imagebox);
+
+      var thumbnail = makeEl("img", "list-thumbnail");
       thumbnail.setAttribute("src", XBMC.decodeImage(items[i].thumbnail));
-      link.appendChild(thumbnail);
-      link.appendChild(document.createTextNode(items[i].label));
+      imagebox.appendChild(thumbnail);
+
+      var title = makeEl("p", "list-title");
+      title.appendChild(document.createTextNode(items[i].label));
+      link.appendChild(title);
+
       this.list.appendChild(item);
 
       link.addEventListener("click", function(item, listitem, event) {
