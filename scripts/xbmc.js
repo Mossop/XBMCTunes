@@ -111,6 +111,7 @@ var XBMC = {
   _host: null,
 
   _playlistListeners: [],
+  _playbackListeners: [],
 
   init: function(host, port) {
     this._host = host;
@@ -128,6 +129,10 @@ var XBMC = {
     this._playlistListeners.push(listener);
   },
 
+  addPlaybackListener: function(listener) {
+    this._playbackListeners.push(listener);
+  },
+
   _notificationCallback: function(method, params) {
     if (method in this._notifications)
       this._notifications[method].call(this, params);
@@ -138,6 +143,7 @@ var XBMC = {
       if (params.playlistid != this._playlist.playlistid)
         return;
 
+      this._playlist.items = [];
       this._playlistListeners.forEach(function(listener) {
         listener.onPlaylistClear();
       });
@@ -147,33 +153,70 @@ var XBMC = {
       if (params.playlistid != this._playlist.playlistid)
         return;
 
-      switch (params.item.type) {
-      case "song":
-        this.getSong(params.item.id).then(function(song) {
-          XBMC._playlist.items.push(song);
-          XBMC._playlistListeners.forEach(function(listener) {
-            listener.onPlaylistAdd([song]);
-          });
+      this._getLibraryItem(params.item).then(function(song) {
+        XBMC._playlist.items.push(song);
+        XBMC._playlistListeners.forEach(function(listener) {
+          listener.onPlaylistAdd([song]);
         });
-        break;
-      default:
-        console.error("Unexpected item type " + params.item.type);
-      }
+      });
     },
 
     "Player.OnPlay": function(params) {
-      if (!this._player || (params.player.playerid != this._player.playerid))
-        this._findActivePlayer(params.player.playerid)
+      this._getPlayerProperties(params.player.playerid).then(function(properties) {
+        properties.state = "playing";
+        properties.item = XBMC._playlist.items[properties.position];
+
+        if (!XBMC._player || (params.player.playerid != XBMC._player.playerid)) {
+          return XBMC._setPlayer({
+            playerid: params.player.playerid,
+            type: properties.type,
+            properties: properties
+          });
+        }
+
+        XBMC._player.properties = properties;
+        XBMC._notifyPlaying();
+      });
     },
 
     "Player.OnPause": function(params) {
+      if (params.player.playerid != this._player.playerid)
+        return;
+
+      this._player.properties.state = "paused";
+      this._notifyPlaying();
     },
 
     "Player.OnSeek": function(params) {
+      if (params.player.playerid != this._player.playerid)
+        return;
+
+      this._notifyPlaying();
     },
 
     "Player.OnStop": function(params) {
+      if (params.player.playerid != this._player.playerid)
+        return;
+
+      this._player.properties.state = "stopped";
+      this._notifyPlaying();
     },
+  },
+
+  _notifyPlaying: function() {
+    this._playbackListeners.forEach(function(listener) {
+      listener.onPlaybackStateChanged(XBMC._player.properties);
+    });
+  },
+
+  _getLibraryItem: function(item) {
+    switch (item.type) {
+    case "song":
+      return this.getSong(item.id);
+      break;
+    default:
+      console.error("Unexpected item type " + params.item.type);
+    }
   },
 
   _setPlaylist: function(playlist) {
@@ -192,6 +235,18 @@ var XBMC = {
         listener.onPlaylistClear();
         listener.onPlaylistAdd(results.items);
       });
+
+      if (XBMC._player) {
+        XBMC._player.properties.item = XBMC._playlist.items[XBMC._player.properties.position];
+        XBMC._notifyPlaying();
+      }
+    });
+  },
+
+  _getPlayerProperties: function(id) {
+    return this._connection.send("Player.GetProperties", {
+      playerid: id,
+      properties: [ "playlistid", "position", "time", "totaltime", "type" ]
     });
   },
 
@@ -213,8 +268,11 @@ var XBMC = {
       }
     }
     else {
-      return this._getPlaylistForType(player.type).then(function(playlist) {
-        return XBMC._setPlaylist(playlist);
+      return XBMC._setPlaylist({
+        playlistid: player.properties.playlistid,
+        type: player.properties.type
+      }).then(function() {
+        player.properties.item = XBMC._playlist.items[player.properties.position];
       });
     }
   },
@@ -226,8 +284,19 @@ var XBMC = {
       }
 
       // TODO find the one with the right ID or default to video
-      return XBMC._setPlayer(players[0]);
+      var player = players[0];
+
+      return XBMC._getPlayerProperties(player.playerid).then(function(properties) {
+        properties.state = "playing";
+        player.properties = properties;
+
+        return XBMC._setPlayer(player);
+      });
     });
+  },
+
+  getPlaybackState: function() {
+    return promise.resolve(this._player ? this._player.properties : null);
   },
 
   getPlaylistItems: function() {

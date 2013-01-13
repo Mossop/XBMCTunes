@@ -5,6 +5,34 @@ function makeEl(tag, className) {
   return el;
 }
 
+var NowPlaying = {
+  init: function() {
+    this.play = document.getElementById("play");
+    this.pause = document.getElementById("pause");
+    this.title = document.getElementById("playing-title");
+    this.subline = document.getElementById("playing-subline");
+    this.thumbnail = document.getElementById("playing-thumbnail");
+
+    XBMC.getPlaybackState().then(this.onPlaybackStateChanged.bind(this));
+    XBMC.addPlaybackListener(this);
+  },
+
+  onPlaybackStateChanged: function(properties) {
+    if (properties.state == "playing") {
+      this.play.classList.add("hidden");
+      this.pause.classList.remove("hidden");
+    }
+    else {
+      this.play.classList.remove("hidden");
+      this.pause.classList.add("hidden");
+    }
+
+    this.title.textContent = properties.item.label;
+    this.subline.textContent = properties.item.artist;
+    this.thumbnail.src = XBMC.decodeImage(properties.item.thumbnail);
+  }
+};
+
 var PlaylistControl = {
   list: null,
 
@@ -13,6 +41,18 @@ var PlaylistControl = {
 
     XBMC.getPlaylistItems().then(this.onPlaylistAdd.bind(this));
     XBMC.addPlaylistListener(this);
+
+    XBMC.getPlaybackState().then(this.onPlaybackStateChanged.bind(this));
+    XBMC.addPlaybackListener(this);
+  },
+
+  onPlaybackStateChanged: function(properties) {
+    var selected = document.querySelectorAll("#playlist .selected");
+    for (var i = 0; i < selected.length; i++)
+      selected[i].classList.remove("selected");
+
+    if (properties.position >= 0)
+      this.list.childNodes[properties.position].classList.add("selected");
   },
 
   onPlaylistClear: function() {
@@ -246,6 +286,7 @@ var MainUI = {
 function init() {
   XBMC.init("127.0.0.1").then(function() {
     MainUI.init();
+    NowPlaying.init();
     PlaylistControl.init();
   });
 }

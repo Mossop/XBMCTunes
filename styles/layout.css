@@ -17,9 +17,11 @@ html, body {
   display: flex;
   flex-direction: row;
   align-items: center;
-  padding: 10px 30px 10px 30px;
+  padding: 0 30px 0 30px;
   background: linear-gradient(to top, #c7c7c7, #efefef);
   border-bottom: 1px solid #7b7b7b;
+  height: 60px;
+  max-height: 60px;
 }
 
 #controls {
@@ -28,7 +30,31 @@ html, body {
 
 #nowplaying {
   flex: 1;
-  background: grey;
+  background: linear-gradient(to top, #d0d6da, #9fa2aa);
+  border: 1px solid;
+  border-top-color: #6c6e74;
+  border-bottom-color: #ececec;
+  border-radius: 5px;
+  padding: 5px;
+}
+
+#playing-thumbnail {
+  width: 48px;
+  height: 48px;
+  float: left;
+}
+
+#playing-title {
+  font-weight: bold;
+  font-size: 120%;
+  padding: 0 50px 5px 50px;
+  text-align: center;
+}
+
+#playing-subline {
+  color: #505050;
+  padding: 0 50px 5px 50px;
+  text-align: center;
 }
 
 #search {

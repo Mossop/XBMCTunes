@@ -12,10 +12,16 @@
   <div id="playback">
     <div id="controls">
       <button onclick="XBMC.skip(false);">Prev</button>
-      <button onclick="XBMC.playPause();">Play</button>
+      <button id="play" onclick="XBMC.playPause();">Play</button>
+      <button id="pause" onclick="XBMC.playPause();">Pause</button>
       <button onclick="XBMC.skip(true);">Next</button>
     </div>
-    <div id="nowplaying"></div>
+    <div id="nowplaying">
+      <img id="playing-thumbnail">
+      <p id="playing-title"></p>
+      <p id="playing-subline"></p>
+      <div id="playing-scrubber"></div>
+    </div>
     <div id="search"></div>
   </div>
   <div id="sectionbar">
