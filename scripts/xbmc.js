@@ -11,6 +11,7 @@ function Connection(socket) {
     if ("id" in message)
       return;
 
+    console.log("Received " + message.method);
     self.listeners.forEach(function(listener) {
       listener(message.method, message.params.data);
     });
@@ -156,7 +157,21 @@ var XBMC = {
       default:
         console.error("Unexpected item type " + params.item.type);
       }
-    }
+    },
+
+    "Player.OnPlay": function(params) {
+      if (!this._player || (params.player.playerid != this._player.playerid))
+        this._findActivePlayer(params.player.playerid)
+    },
+
+    "Player.OnPause": function(params) {
+    },
+
+    "Player.OnSeek": function(params) {
+    },
+
+    "Player.OnStop": function(params) {
+    },
   },
 
   _setPlaylist: function(playlist) {
@@ -179,7 +194,11 @@ var XBMC = {
   },
 
   _setPlayer: function(player) {
-    if (this._player == player && this._playlist)
+    function playerID(player) {
+      return player ? player.playerid : null;
+    }
+
+    if (this._playlist && (playerID(this._player) == playerID(player)))
       return;
 
     this._player = player;
@@ -198,12 +217,13 @@ var XBMC = {
     }
   },
 
-  _findActivePlayer: function() {
+  _findActivePlayer: function(playerid) {
     return this._connection.send("Player.GetActivePlayers").then(function(players) {
       if (players.length == 0) {
         return XBMC._setPlayer(null);
       }
 
+      // TODO find the one with the right ID or default to video
       return XBMC._setPlayer(players[0]);
     });
   },
