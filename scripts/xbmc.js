@@ -284,7 +284,7 @@ var XBMC = {
 
   _setPlaylist: function(playlist) {
     if (this._playlist && playlist.playlistid == this._playlist.playlistid)
-      return promise.resolved();
+      return promise.resolve();
 
     this._playlist = playlist;
     this._playlist.items = [];
@@ -324,7 +324,7 @@ var XBMC = {
     }
 
     if (this._playlist && (playerID(this._player) == playerID(player)))
-      return promise.resolved();
+      return promise.resolve();
 
     this._player = player;
 

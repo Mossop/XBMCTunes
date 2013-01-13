@@ -348,7 +348,7 @@ var MainUI = {
 };
 
 function init() {
-  XBMC.init("127.0.0.1").then(function() {
+  XBMC.init("officepi").then(function() {
     MainUI.init();
     NowPlaying.init();
     PlaylistControl.init();
