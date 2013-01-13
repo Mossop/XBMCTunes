@@ -3,6 +3,18 @@ function Connection(socket) {
   this.id = 1;
   this.queue = [];
   this.locked = false;
+  this.listeners = [];
+
+  var self = this;
+  socket.addEventListener("message", function(event) {
+    var message = JSON.parse(event.data);
+    if ("id" in message)
+      return;
+
+    self.listeners.forEach(function(listener) {
+      listener(message.method, message.params.data);
+    });
+  }, false);
 }
 
 Connection.prototype = {
@@ -10,6 +22,10 @@ Connection.prototype = {
   locked: null,
   queue: null,
   id: null,
+
+  addNotificationListener: function(callback) {
+    this.listeners.push(callback);
+  },
 
   runQueue: function() {
     if (this.locked)
@@ -89,6 +105,10 @@ function openConnection(url) {
 
 var XBMC = {
   _connection: null,
+  _player: null,
+  _playlist: null,
+
+  _playlistListeners: [],
 
   init: function(host, port) {
     if (!port)
@@ -96,7 +116,100 @@ var XBMC = {
 
     return openConnection("ws://" + host + ":" + port + "/jsonrpc").then(function(connection) {
       XBMC._connection = connection;
+      connection.addNotificationListener(XBMC._notificationCallback.bind(XBMC));
+      return XBMC._findActivePlayer();
     });
+  },
+
+  addPlaylistListener: function(listener) {
+    this._playlistListeners.push(listener);
+  },
+
+  _notificationCallback: function(method, params) {
+    if (method in this._notifications)
+      this._notifications[method].call(this, params);
+  },
+
+  _notifications: {
+    "Playlist.OnClear": function(params) {
+      if (params.playlistid != this._playlist.playlistid)
+        return;
+
+      this._playlistListeners.forEach(function(listener) {
+        listener.onPlaylistClear();
+      });
+    },
+
+    "Playlist.OnAdd": function(params) {
+      if (params.playlistid != this._playlist.playlistid)
+        return;
+
+      switch (params.item.type) {
+      case "song":
+        this.getSong(params.item.id).then(function(song) {
+          XBMC._playlist.items.push(song);
+          XBMC._playlistListeners.forEach(function(listener) {
+            listener.onPlaylistAdd([song]);
+          });
+        });
+        break;
+      default:
+        console.error("Unexpected item type " + params.item.type);
+      }
+    }
+  },
+
+  _setPlaylist: function(playlist) {
+    if (this._playlist && playlist.playlistid == this._playlist.playlistid)
+      return;
+
+    this._playlist = playlist;
+    this._playlist.items = [];
+
+    return this._connection.send("Playlist.GetItems", {
+      properties: [ "title", "thumbnail", "artist", "track", "disc", "duration" ],
+      playlistid: playlist.playlistid
+    }).then(function(results) {
+      XBMC._playlist.items = results.items ? results.items : [];
+      XBMC._playlistListeners.forEach(function(listener) {
+        listener.onPlaylistClear();
+        listener.onPlaylistAdd(results.items);
+      });
+    });
+  },
+
+  _setPlayer: function(player) {
+    if (this._player == player && this._playlist)
+      return;
+
+    this._player = player;
+
+    if (!player) {
+      if (!this._playlist) {
+        return this._getPlaylistForType("audio").then(function(playlist) {
+          return XBMC._setPlaylist(playlist);
+        });
+      }
+    }
+    else {
+      return this._getPlaylistForType(player.type).then(function(playlist) {
+        return XBMC._setPlaylist(playlist);
+      });
+    }
+  },
+
+  _findActivePlayer: function() {
+    return this._connection.send("Player.GetActivePlayers").then(function(players) {
+      if (players.length == 0) {
+        return XBMC._setPlayer(null);
+      }
+
+      return XBMC._setPlayer(players[0]);
+    });
+  },
+
+  getPlaylistItems: function() {
+    return promise.resolve(this._playlist.items);
   },
 
   decodeImage: function(image) {
@@ -107,7 +220,7 @@ var XBMC = {
     return decodeURIComponent(image);
   },
 
-  getPlaylist: function(type) {
+  _getPlaylistForType: function(type) {
     return this._connection.send("Playlist.GetPlaylists").then(function(playlists) {
       for (var i = 0; i < playlists.length; i++) {
         if (playlists[i].type == type)
@@ -121,17 +234,18 @@ var XBMC = {
   playTracks: function(songs) {
     var connection = this._connection;
 
-    return this.getPlaylist("audio").then(function(playlist) {
+    return this._getPlaylistForType("audio").then(function(playlist) {
       var promise = connection.send("Playlist.Clear", { playlistid: playlist.playlistid });
       if (songs.length == 0)
         return promise;
 
+      var first = songs.shift();
       // Queue up the first song
       promise.then(function() {
         connection.send("Playlist.Add", {
           playlistid: playlist.playlistid,
           item: {
-            songid: songs.shift().songid
+            songid: first.songid
           }
         })
       });
@@ -211,9 +325,18 @@ var XBMC = {
     });
   },
 
+  getSong: function(id) {
+    return this._connection.send("AudioLibrary.GetSongDetails", {
+      songid: id,
+      properties: ["title", "thumbnail", "artist", "track", "disc", "duration"]
+    }).then(function(result) {
+      return result.songdetails;
+    });
+  },
+
   getSongs: function(filter) {
     return this.getList("AudioLibrary.GetSongs", "songs", {
-      properties: ["title", "artist", "track", "disc", "duration"],
+      properties: ["title", "thumbnail", "artist", "track", "disc", "duration"],
       filter: filter
     }).then(function(songs) {
       return songs.sort(function(a, b) {

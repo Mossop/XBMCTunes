@@ -194,3 +194,40 @@ html, body {
   border-left: 1px solid #bbbbbb;
   position: relative;
 }
+
+#playlist li {
+}
+
+#playlist a {
+  padding: 5px 15px 5px 15px;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+#playlist a:hover {
+  background: #d2e7ff; 
+}
+
+#playlist .selected a {
+  color: #ffffff;
+  background: #9db8d8;
+}
+
+.playlist-image {
+  width: 32px;
+  height: 32px;
+  padding-right: 10px;
+  text-align: center;
+}
+
+.playlist-thumbnail {
+  max-width: 32px;
+  max-height: 32px;
+}
+
+.playlist-title {
+  flex: 1;
+}

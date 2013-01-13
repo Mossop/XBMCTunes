@@ -5,6 +5,43 @@ function makeEl(tag, className) {
   return el;
 }
 
+var PlaylistControl = {
+  list: null,
+
+  init: function() {
+    this.list = document.querySelector("#playlist .scrollbox");
+
+    XBMC.getPlaylistItems().then(this.onPlaylistAdd.bind(this));
+    XBMC.addPlaylistListener(this);
+  },
+
+  onPlaylistClear: function() {
+    this.list.innerHTML = "";
+  },
+
+  onPlaylistAdd: function(items) {
+    items.forEach(function(item) {
+      var li = makeEl("li");
+
+      var link = makeEl("a");
+      li.appendChild(link);
+
+      var imagebox = makeEl("div", "playlist-image");
+      link.appendChild(imagebox);
+
+      var thumbnail = makeEl("img", "playlist-thumbnail");
+      thumbnail.setAttribute("src", XBMC.decodeImage(item.thumbnail));
+      imagebox.appendChild(thumbnail);
+
+      var title = makeEl("p", "playlist-title");
+      title.appendChild(document.createTextNode(item.label));
+      link.appendChild(title);
+
+      this.list.appendChild(li);
+    }, this);
+  }
+};
+
 var MainUI = {
   list: null,
   library: null,
@@ -209,6 +246,7 @@ var MainUI = {
 function init() {
   XBMC.init("127.0.0.1").then(function() {
     MainUI.init();
+    PlaylistControl.init();
   });
 }
 
