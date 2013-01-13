@@ -107,6 +107,61 @@ var XBMC = {
     return decodeURIComponent(image);
   },
 
+  getPlaylist: function(type) {
+    return this._connection.send("Playlist.GetPlaylists").then(function(playlists) {
+      for (var i = 0; i < playlists.length; i++) {
+        if (playlists[i].type == type)
+          return playlists[i];
+      }
+
+      return null;
+    });
+  },
+
+  playTracks: function(songs) {
+    var connection = this._connection;
+
+    return this.getPlaylist("audio").then(function(playlist) {
+      var promise = connection.send("Playlist.Clear", { playlistid: playlist.playlistid });
+      if (songs.length == 0)
+        return promise;
+
+      // Queue up the first song
+      promise.then(function() {
+        connection.send("Playlist.Add", {
+          playlistid: playlist.playlistid,
+          item: {
+            songid: songs.shift().songid
+          }
+        })
+      });
+
+      // Start playing it
+      promise.then(function() {
+        connection.send("Player.Open", {
+          item: {
+            playlistid: playlist.playlistid,
+            position: 0
+          }
+        });
+      });
+
+      // Queue up the rest of the songs
+      songs.forEach(function(song) {
+        promise.then(function() {
+          connection.send("Playlist.Add", {
+            playlistid: playlist.playlistid,
+            item: {
+              songid: song.songid
+            }
+          });
+        });
+      });
+
+      return promise;
+    });
+  },
+
   getList: function(method, property, extraparams) {
     var params = {
       properties: ["thumbnail"],

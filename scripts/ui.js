@@ -16,6 +16,16 @@ var MainUI = {
     this.showArtists();
   },
 
+  playTracks: function(tracks) {
+    XBMC.playTracks(tracks);
+  },
+
+  playAlbum: function(album) {
+    XBMC.getSongs({ albumid: album.albumid }).then(function(songs) {
+      MainUI.playTracks(songs);
+    });
+  },
+
   highlightSection: function(id) {
     var last = document.querySelectorAll("#sections .selected");
     for (var i = 0; i < last.length; i++)
@@ -38,40 +48,56 @@ var MainUI = {
     this.library.parentNode.classList.remove("loading");
 
     function fillTracks(div, album) {
-      var tracks = makeEl("ol", "album-tracks");
-      div.appendChild(tracks);
-      
       XBMC.getSongs({ albumid: album.albumid }).then(function(songs) {
-        for (var i = 0; i < songs.length; i++) {
+        var tracks = makeEl("ol", "album-tracks");
+        var lastDisc = songs[0].disc;
+
+        songs.forEach(function(song) {
+          if (song.disc != lastDisc) {
+            div.appendChild(tracks);
+            tracks = makeEl("ol", "album-tracks");
+            lastDisc = song.disc
+          }
+
           var track = makeEl("li");
-          track.textContent = songs[i].track + ": " + songs[i].label;
+          track.textContent = song.track + ": " + song.label;
           tracks.appendChild(track);
-        }
+          track.addEventListener("click", function() {
+            MainUI.playTracks(songs.slice(songs.indexOf(song)));
+          }, false);
+        });
+        div.appendChild(tracks);
       });
     }
 
-    for (var i = 0; i < albums.length; i++) {
+    albums.forEach(function(album) {
       var div = makeEl("div", "album");
 
       var thumb = makeEl("img", "album-thumbnail");
-      thumb.setAttribute("src", XBMC.decodeImage(albums[i].thumbnail));
+      thumb.setAttribute("src", XBMC.decodeImage(album.thumbnail));
       div.appendChild(thumb);
+      thumb.addEventListener("click", function() {
+        MainUI.playAlbum(album);
+      }, false);
 
       var header = makeEl("p", "album-header");
       div.appendChild(header);
 
       var title = makeEl("span", "album-title");
-      title.textContent = albums[i].label;
+      title.textContent = album.label;
       header.appendChild(title);
+      title.addEventListener("click", function() {
+        MainUI.playAlbum(album);
+      }, false);
 
       var artist = makeEl("span", "album-artist");
-      artist.textContent = "By " + albums[i].displayartist;
+      artist.textContent = "By " + album.displayartist;
       header.appendChild(artist);
 
-      fillTracks(div, albums[i]);
+      fillTracks(div, album);
 
       this.library.appendChild(div);
-    }
+    }, this);
   },
 
   populateArtistLibrary: function(artist) {

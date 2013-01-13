@@ -101,6 +101,10 @@ html, body {
   align-items: center;
 }
 
+#library-list a:hover {
+  background: #d2e7ff; 
+}
+
 #library-list .selected a {
   color: #ffffff;
   background: #9db8d8;
@@ -152,12 +156,12 @@ html, body {
   height: 128px;
   border: 1px solid black;
   float: left;
+  cursor: pointer;
 }
 
 .album-header {
   margin-left: 148px;
   padding-bottom: 5px;
-  margin-bottom: 10px;
   border-bottom: 1px solid #c0c0c0
 }
 
@@ -165,6 +169,7 @@ html, body {
   font-size: 120%;
   font-weight: bold;
   padding-right: 10px;
+  cursor: pointer;
 }
 
 .album-artist {
@@ -173,6 +178,14 @@ html, body {
 
 .album-tracks {
   margin-left: 148px;
+  margin-top: 10px;
+  -moz-column-count: 3;
+}
+
+.album-tracks li {
+  margin-top: 2px;
+  color: #303030;
+  cursor: pointer;
 }
 
 #playlist {
