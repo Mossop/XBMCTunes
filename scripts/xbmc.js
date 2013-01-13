@@ -13,7 +13,12 @@ function Connection(socket) {
 
     console.log("Received " + message.method);
     self.listeners.forEach(function(listener) {
-      listener(message.method, message.params.data);
+      try {
+        listener(message.method, message.params.data);
+      }
+      catch (e) {
+        console.error(e);
+      }
     });
   }, false);
 }
@@ -145,7 +150,12 @@ var XBMC = {
 
       this._playlist.items = [];
       this._playlistListeners.forEach(function(listener) {
-        listener.onPlaylistClear();
+        try {
+          listener.onPlaylistClear();
+        }
+        catch (e) {
+          console.error(e);
+        }
       });
     },
 
@@ -156,12 +166,19 @@ var XBMC = {
       this._getLibraryItem(params.item).then(function(song) {
         XBMC._playlist.items.push(song);
         XBMC._playlistListeners.forEach(function(listener) {
-          listener.onPlaylistAdd([song]);
+          try {
+            listener.onPlaylistAdd([song]);
+          }
+          catch (e) {
+            console.error(e);
+          }
         });
       });
     },
 
     "Player.OnPlay": function(params) {
+      clearTimeout(this._timeout);
+
       this._getPlayerProperties(params.player.playerid).then(function(properties) {
         properties.state = "playing";
         properties.item = XBMC._playlist.items[properties.position];
@@ -176,12 +193,15 @@ var XBMC = {
 
         XBMC._player.properties = properties;
         XBMC._notifyPlaying();
+        XBMC._timeout = setTimeout(XBMC._updateSeekPosition.bind(XBMC), 1000);
       });
     },
 
     "Player.OnPause": function(params) {
       if (params.player.playerid != this._player.playerid)
         return;
+
+      clearTimeout(this._timeout);
 
       this._player.properties.state = "paused";
       this._notifyPlaying();
@@ -191,21 +211,64 @@ var XBMC = {
       if (params.player.playerid != this._player.playerid)
         return;
 
+      clearTimeout(this._timeout);
+
       this._notifyPlaying();
     },
 
     "Player.OnStop": function(params) {
-      if (params.player.playerid != this._player.playerid)
-        return;
+      // TODO check if it is our player that has stopped
+      clearTimeout(this._timeout);
 
       this._player.properties.state = "stopped";
       this._notifyPlaying();
     },
   },
 
+  _timeout: null,
+  _timeoutCount: 0,
+  _updateSeekPosition: function() {
+    this._timeout = null;
+    if (this._player.properties.state != "playing")
+      return;
+
+    var time = this._player.properties.time;
+    time.seconds++;
+    while (time.seconds >= 60) {
+      time.minutes++;
+      time.seconds -= 60;
+    }
+    while (time.minutes >= 60) {
+      time.hours++;
+      time.minutes -= 60;
+    }
+
+    this._notifyPlaying();
+
+    this._timeout = setTimeout(this._updateSeekPosition.bind(this), 1000);
+
+    this._timeoutCount++;
+    if (this._timeoutCount == 10) {
+      this._getPlayerProperties(this._player.playerid).then(function(properties) {
+        if (XBMC._player.properties.state != "playing")
+          return;
+        XBMC._timeoutCount = 0;
+        clearTimeout(XBMC._timeout)
+        XBMC._player.properties.time = properties.time;
+        XBMC._notifyPlaying();
+        XBMC._timeout = setTimeout(XBMC._updateSeekPosition.bind(XBMC), 1000);
+      });
+    }
+  },
+
   _notifyPlaying: function() {
     this._playbackListeners.forEach(function(listener) {
-      listener.onPlaybackStateChanged(XBMC._player.properties);
+      try {
+        listener.onPlaybackStateChanged(XBMC._player.properties);
+      }
+      catch (e) {
+        console.error(e);
+      }
     });
   },
 
@@ -221,7 +284,7 @@ var XBMC = {
 
   _setPlaylist: function(playlist) {
     if (this._playlist && playlist.playlistid == this._playlist.playlistid)
-      return;
+      return promise.resolved();
 
     this._playlist = playlist;
     this._playlist.items = [];
@@ -232,8 +295,13 @@ var XBMC = {
     }).then(function(results) {
       XBMC._playlist.items = results.items ? results.items : [];
       XBMC._playlistListeners.forEach(function(listener) {
-        listener.onPlaylistClear();
-        listener.onPlaylistAdd(results.items);
+        try {
+          listener.onPlaylistClear();
+          listener.onPlaylistAdd(results.items);
+        }
+        catch (e) {
+          console.error(e);
+        }
       });
 
       if (XBMC._player) {
@@ -256,7 +324,7 @@ var XBMC = {
     }
 
     if (this._playlist && (playerID(this._player) == playerID(player)))
-      return;
+      return promise.resolved();
 
     this._player = player;
 
@@ -273,6 +341,7 @@ var XBMC = {
         type: player.properties.type
       }).then(function() {
         player.properties.item = XBMC._playlist.items[player.properties.position];
+        XBMC._timeout = setTimeout(XBMC._updateSeekPosition.bind(XBMC), 1000);
       });
     }
   },

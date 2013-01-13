@@ -57,6 +57,26 @@ html, body {
   text-align: center;
 }
 
+#playing-scrubber {
+  padding-left: 70px;
+  padding-right: 70px;
+  margin-top: -15px;
+}
+
+#elapsed {
+  float: left;
+}
+
+#remaining {
+  float: right;
+}
+
+#scrubber {
+  border: 1px solid black;
+  width: 100%;
+  height: 5px;
+}
+
 #search {
   flex: 1;
 }

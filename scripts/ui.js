@@ -5,6 +5,42 @@ function makeEl(tag, className) {
   return el;
 }
 
+function timeInMillis(time) {
+  var result = time.milliseconds;
+  result += time.seconds * 1000;
+  result += time.minutes * 60 * 1000;
+  result += time.hours * 60 * 60 * 1000;
+  return result;
+}
+
+function timeFromMillis(millis) {
+  var result = {};
+  result.milliseconds = millis % 1000;
+  millis = Math.floor(millis / 1000);
+  result.seconds = millis % 60;
+  millis = Math.floor(millis / 60);
+  result.minutes = millis % 60;
+  result.hours = Math.floor(millis / 60);
+
+  return result;
+}
+
+function formatTime(time) {
+  result = "";
+  if (time.hours > 0) {
+    result += time.hours + ":";
+    if (time.minutes < 10)
+      result += "0";
+  }
+
+  result += time.minutes + ":";
+  if (time.seconds < 10)
+    result += "0";
+  result += time.seconds;
+
+  return result;
+}
+
 var NowPlaying = {
   init: function() {
     this.play = document.getElementById("play");
@@ -12,24 +48,49 @@ var NowPlaying = {
     this.title = document.getElementById("playing-title");
     this.subline = document.getElementById("playing-subline");
     this.thumbnail = document.getElementById("playing-thumbnail");
+    this.elapsed = document.getElementById("elapsed");
+    this.remaining = document.getElementById("remaining");
+    this.canvas = document.getElementById("scrubber");
+    this.content = document.getElementById("playing-content");
 
     XBMC.getPlaybackState().then(this.onPlaybackStateChanged.bind(this));
     XBMC.addPlaybackListener(this);
   },
 
   onPlaybackStateChanged: function(properties) {
-    if (properties.state == "playing") {
-      this.play.classList.add("hidden");
-      this.pause.classList.remove("hidden");
-    }
-    else {
+    if (!properties || properties.state != "playing") {
       this.play.classList.remove("hidden");
       this.pause.classList.add("hidden");
     }
+    else {
+      this.play.classList.add("hidden");
+      this.pause.classList.remove("hidden");
+    }
+
+    if (!properties) {
+      this.content.classList.add("hidden");
+      return;
+    }
+
+    this.content.classList.remove("hidden");
 
     this.title.textContent = properties.item.label;
     this.subline.textContent = properties.item.artist;
     this.thumbnail.src = XBMC.decodeImage(properties.item.thumbnail);
+
+    var elapsed = timeInMillis(properties.time);
+    var total = timeInMillis(properties.totaltime);
+
+    this.canvas.width = total / 1000;
+    var ctxt = this.canvas.getContext("2d");
+    ctxt.fillStyle = "rgb(0,0,0)";
+
+    var percent = (elapsed / total) * this.canvas.width;
+    ctxt.clearRect(percent + 1, 0, this.canvas.width - percent, this.canvas.height);
+    ctxt.fillRect(0, 0, percent, this.canvas.height);
+
+    this.elapsed.textContent = formatTime(properties.time);
+    this.remaining.textContent = formatTime(timeFromMillis(total - elapsed));
   }
 };
 
@@ -51,7 +112,10 @@ var PlaylistControl = {
     for (var i = 0; i < selected.length; i++)
       selected[i].classList.remove("selected");
 
-    if (properties.position >= 0)
+    if (!properties)
+      return;
+
+    if (properties.position >= 0 && properties.position < this.list.childNodes.length)
       this.list.childNodes[properties.position].classList.add("selected");
   },
 
