@@ -11,9 +11,9 @@
 <body onload="init()" onunload="destroy()" id="main">
   <div id="playback">
     <div id="controls">
-      <button>Prev</button>
-      <button>Play</button>
-      <button>Next</button>
+      <button onclick="XBMC.skip(false);">Prev</button>
+      <button onclick="XBMC.playPause();">Play</button>
+      <button onclick="XBMC.skip(true);">Next</button>
     </div>
     <div id="nowplaying"></div>
     <div id="search"></div>

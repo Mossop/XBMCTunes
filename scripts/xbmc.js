@@ -231,6 +231,28 @@ var XBMC = {
     });
   },
 
+  playPause: function() {
+    if (!this._player)
+      return;
+
+    return this._connection.send("Player.PlayPause", {
+      playerid: this._player.playerid
+    })
+  },
+
+  skip: function(forwards) {
+    if (!this._player)
+      return;
+
+    if (forwards === undefined)
+      forwards = true;
+
+    return this._connection.send("Player.GoTo", {
+      playerid: this._player.playerid,
+      to: forwards ? "next" : "previous"
+    })
+  },
+
   playTracks: function(songs) {
     var connection = this._connection;
 
