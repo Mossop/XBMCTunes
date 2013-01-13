@@ -108,10 +108,12 @@ var XBMC = {
   _connection: null,
   _player: null,
   _playlist: null,
+  _host: null,
 
   _playlistListeners: [],
 
   init: function(host, port) {
+    this._host = host;
     if (!port)
       port = 9090;
 
@@ -233,11 +235,7 @@ var XBMC = {
   },
 
   decodeImage: function(image) {
-    if (!image.startsWith("image://"))
-      return "";
-
-    image = image.substring(8, image.length - 1);
-    return decodeURIComponent(image);
+    return "http://" + this._host + "/image/" + encodeURI(image);
   },
 
   _getPlaylistForType: function(type) {
