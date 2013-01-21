@@ -349,6 +349,7 @@ var MainUI = {
 
 function init() {
   XBMC.init("officepi").then(function() {
+    document.getElementById("connecting").classList.add("hidden");
     MainUI.init();
     NowPlaying.init();
     PlaylistControl.init();

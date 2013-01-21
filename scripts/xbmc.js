@@ -1,18 +1,56 @@
-function Connection(socket) {
-  this.socket = socket;
+function Connection(url) {
+  this.url = url;
   this.id = 1;
   this.queue = [];
   this.locked = false;
   this.listeners = [];
+}
 
-  var self = this;
-  socket.addEventListener("message", function(event) {
+Connection.prototype = {
+  url: null,
+  socket: null,
+  locked: null,
+  queue: null,
+  id: null,
+
+  connect: function() {
+    var deferred = promise.defer();
+
+    console.info("Connecting to " + this.url);
+
+    var self = this;
+    var socket = new WebSocket(this.url);
+
+    socket.onopen = function onOpen() {
+      console.info("Socket connected");
+
+      self.socket = socket;
+      deferred.resolve();
+    };
+
+    socket.onclose = function onClose(event) {
+      console.error("Socket closed: " + event.reason);
+
+      if (self.socket) {
+        // TODO Send out disconnection event
+      }
+
+      self.socket = null;
+      deferred.resolve(self.connect());
+    };
+
+    socket.onmessage = this.onMessage.bind(this);
+
+    return deferred.promise;
+  },
+
+  onMessage: function(event) {
     var message = JSON.parse(event.data);
     if ("id" in message)
       return;
 
     console.log("Received " + message.method);
-    self.listeners.forEach(function(listener) {
+    this.listeners.forEach(function(listener) {
       try {
         listener(message.method, message.params.data);
       }
@@ -20,14 +58,7 @@ function Connection(socket) {
         console.error(e);
       }
     });
-  }, false);
-}
-
-Connection.prototype = {
-  socket: null,
-  locked: null,
-  queue: null,
-  id: null,
+  },
 
   addNotificationListener: function(callback) {
     this.listeners.push(callback);
@@ -90,23 +121,11 @@ Connection.prototype = {
 };
 
 function openConnection(url) {
-  var deferred = promise.defer();
+  var connection = new Connection(url);
 
-  console.info("Connecting to " + url);
-
-  var socket = new WebSocket(url);
-  socket.onopen = function onOpen() {
-    console.info("Socket connected");
-
-    deferred.resolve(new Connection(socket));
-  };
-
-  socket.onclose = function onClose(event) {
-    console.error("Socket closed: " + event.reason);
-    deferred.reject(event.reason);
-  };
-
-  return deferred.promise;
+  return connection.connect().then(function() {
+    return connection;
+  });
 }
 
 var XBMC = {
