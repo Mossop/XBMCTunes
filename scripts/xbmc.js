@@ -420,7 +420,7 @@ var XBMC = {
       var first = songs.shift();
       // Queue up the first song
       promise.then(function() {
-        connection.send("Playlist.Add", {
+        return connection.send("Playlist.Add", {
           playlistid: playlist.playlistid,
           item: {
             songid: first.songid
@@ -430,7 +430,7 @@ var XBMC = {
 
       // Start playing it
       promise.then(function() {
-        connection.send("Player.Open", {
+        return connection.send("Player.Open", {
           item: {
             playlistid: playlist.playlistid,
             position: 0
@@ -440,7 +440,7 @@ var XBMC = {
 
       // Queue up the rest of the songs
       songs.forEach(function(song) {
-        promise.then(function() {
+        return promise.then(function() {
           connection.send("Playlist.Add", {
             playlistid: playlist.playlistid,
             item: {
