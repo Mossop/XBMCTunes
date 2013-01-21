@@ -124,10 +124,20 @@ var PlaylistControl = {
   },
 
   onPlaylistAdd: function(items) {
+    function getPos(li) {
+      for (var i = 0; i < li.parentNode.childNodes.length; i++)
+        if (li.parentNode.childNodes[i] == li)
+          return i;
+      return -1;
+    }
+
     items.forEach(function(item) {
       var li = makeEl("li");
 
       var link = makeEl("a");
+      link.addEventListener("click", function(event) {
+        XBMC.gotoPlaylist(getPos(li));
+      }, false);
       li.appendChild(link);
 
       var imagebox = makeEl("div", "playlist-image");
@@ -138,11 +148,32 @@ var PlaylistControl = {
       imagebox.appendChild(thumbnail);
 
       var title = makeEl("p", "playlist-title");
+      var buttons = makeEl("div", "buttons");
+      title.appendChild(buttons);
+
+      var play = makeEl("button", "play");
+      play.addEventListener("click", function(event) {
+        XBMC.gotoPlaylist(getPos(li));
+        event.stopPropagation();
+      }, false);
+      buttons.appendChild(play);
+
+      var remove = makeEl("button", "remove");
+      remove.addEventListener("click", function(event) {
+        XBMC.removePlaylistItem(getPos(li));
+        event.stopPropagation();
+      }, false);
+      buttons.appendChild(remove);
+
       title.appendChild(document.createTextNode(item.label));
       link.appendChild(title);
 
       this.list.appendChild(li);
     }, this);
+  },
+
+  onPlaylistRemove: function(pos) {
+    this.list.removeChild(this.list.childNodes[pos]);
   }
 };
 

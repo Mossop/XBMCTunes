@@ -249,6 +249,14 @@ button {
   margin-left: 5px;
 }
 
+.remove {
+  background-image: url("../images/remove.png");
+  width: 16px;
+  height: 16px;
+  vertical-align: middle;
+  margin-left: 5px;
+}
+
 .album-tracks {
   margin-left: 148px;
   margin-top: 10px;
@@ -278,6 +286,7 @@ button {
 }
 
 #playlist li {
+  position: relative;
 }
 
 #playlist a {
@@ -296,6 +305,14 @@ button {
 #playlist .selected a {
   color: #ffffff;
   background: #9db8d8;
+}
+
+#playlist .buttons {
+  float: right;
+}
+
+#playlist .selected .buttons {
+  display: none;
 }
 
 .playlist-image {

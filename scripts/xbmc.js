@@ -195,6 +195,23 @@ var XBMC = {
       });
     },
 
+    "Playlist.OnRemove": function(params) {
+      if (params.playlistid != this._playlist.playlistid)
+        return;
+
+      this._playlist.items.splice(params.position, 1);
+      if (this._player.properties.position > params.position)
+        this._player.properties.position--;
+      this._playlistListeners.forEach(function(listener) {
+        try {
+          listener.onPlaylistRemove(params.position);
+        }
+        catch (e) {
+          console.error(e);
+        }
+      });
+    },
+
     "Player.OnPlay": function(params) {
       clearTimeout(this._timeout);
 
@@ -426,6 +443,30 @@ var XBMC = {
       playerid: this._player.playerid,
       to: forwards ? "next" : "previous"
     })
+  },
+
+  gotoPlaylist: function(pos) {
+    var connection = this._connection;
+
+    return this._getPlaylistForType("audio").then(function(playlist) {
+      return connection.send("Player.Open", {
+        item: {
+          playlistid: playlist.playlistid,
+          position: pos
+        }
+      });
+    });
+  },
+
+  removePlaylistItem: function(pos) {
+    var connection = this._connection;
+
+    return this._getPlaylistForType("audio").then(function(playlist) {
+      return connection.send("Playlist.Remove", {
+        playlistid: playlist.playlistid,
+        position: pos
+      });
+    });
   },
 
   playTracks: function(songs) {
