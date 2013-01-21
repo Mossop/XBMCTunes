@@ -157,13 +157,23 @@ var MainUI = {
     this.showArtists();
   },
 
-  playTracks: function(tracks) {
-    XBMC.playTracks(tracks);
+  playTrack: function(track) {
+    XBMC.playTracks([track]);
+  },
+
+  queueTrack: function(track) {
+    XBMC.queueTracks([track]);
   },
 
   playAlbum: function(album) {
     XBMC.getSongs({ albumid: album.albumid }).then(function(songs) {
-      MainUI.playTracks(songs);
+      XBMC.playTracks(songs);
+    });
+  },
+
+  queueAlbum: function(album) {
+    XBMC.getSongs({ albumid: album.albumid }).then(function(songs) {
+      XBMC.queueTracks(songs);
     });
   },
 
@@ -200,11 +210,25 @@ var MainUI = {
             lastDisc = song.disc
           }
 
-          var track = makeEl("li");
+          var track = makeEl("li", "album-track");
           track.textContent = song.track + ": " + song.label;
           tracks.appendChild(track);
           track.addEventListener("click", function() {
-            MainUI.playTracks(songs.slice(songs.indexOf(song)));
+            MainUI.playTrack(song);
+          }, false);
+
+          var play = makeEl("button", "play");
+          track.appendChild(play);
+          play.addEventListener("click", function(event) {
+            MainUI.playTrack(song);
+            event.stopPropagation();
+          }, false);
+
+          var add = makeEl("button", "add");
+          track.appendChild(add);
+          add.addEventListener("click", function(event) {
+            MainUI.queueTrack(song);
+            event.stopPropagation();
           }, false);
         });
         div.appendChild(tracks);
@@ -234,6 +258,18 @@ var MainUI = {
       var artist = makeEl("span", "album-artist");
       artist.textContent = "By " + album.displayartist;
       header.appendChild(artist);
+
+      var play = makeEl("button", "play");
+      header.appendChild(play);
+      play.addEventListener("click", function() {
+        MainUI.playAlbum(album);
+      }, false);
+
+      var add = makeEl("button", "add");
+      header.appendChild(add);
+      add.addEventListener("click", function() {
+        MainUI.queueAlbum(album);
+      }, false);
 
       fillTracks(div, album);
 

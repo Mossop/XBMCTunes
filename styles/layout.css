@@ -28,6 +28,17 @@ html, body {
   flex: 1;
 }
 
+#controls button {
+  vertical-align: middle;
+}
+
+button {
+  background: transparent;
+  border: 0;
+  padding: 0;
+  margin: 0;
+}
+
 #nowplaying {
   flex: 1;
   background: linear-gradient(to top, #d0d6da, #9fa2aa);
@@ -222,16 +233,41 @@ html, body {
   color: grey;
 }
 
+.play {
+  background-image: url("../images/play-small.png");
+  width: 16px;
+  height: 16px;
+  vertical-align: middle;
+  margin-left: 5px;
+}
+
+.add {
+  background-image: url("../images/add.png");
+  width: 16px;
+  height: 16px;
+  vertical-align: middle;
+  margin-left: 5px;
+}
+
 .album-tracks {
   margin-left: 148px;
   margin-top: 10px;
   -moz-column-count: 3;
 }
 
-.album-tracks li {
+.album-track {
   margin-top: 2px;
   color: #303030;
   cursor: pointer;
+  min-height: 20px;
+}
+
+.album-track button {
+  display: none;
+}
+
+.album-track:hover button {
+  display: inline;
 }
 
 #playlist {

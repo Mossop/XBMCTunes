@@ -11,10 +11,10 @@
 <body onload="init()" onunload="destroy()" id="main">
   <div id="playback">
     <div id="controls">
-      <button onclick="XBMC.skip(false);">Prev</button>
-      <button id="play" onclick="XBMC.playPause();">Play</button>
-      <button id="pause" class="hidden" onclick="XBMC.playPause();">Pause</button>
-      <button onclick="XBMC.skip(true);">Next</button>
+      <button onclick="XBMC.skip(false);"><img src="images/skip-backward.png"></button>
+      <button id="play" onclick="XBMC.playPause();"><img src="images/play.png"></button>
+      <button id="pause" class="hidden" onclick="XBMC.playPause();"><img src="images/pause.png"></button>
+      <button onclick="XBMC.skip(true);"><img src="images/skip-forward.png"></button>
     </div>
     <div id="nowplaying">
       <div id="playing-content" class="hidden">
@@ -35,8 +35,8 @@
       <li class="music" id="section-albums"><a onclick="MainUI.showAlbums(); return false;">Albums</a></li>
       <li class="music" id="section-artists"><a onclick="MainUI.showArtists(); return false;">Artists</a></li>
       <li class="music" id="section-genres"><a onclick="MainUI.showGenres(); return false;">Genres</a></li>
-      <li class="video" id="section-movies"><a onclick="MainUI.showMovies(); return false;">Movies</a></li>
-      <li class="video" id="section-tv"><a onclick="MainUI.showTV(); return false;">TV</a></li>
+      <!-- <li class="video" id="section-movies"><a onclick="MainUI.showMovies(); return false;">Movies</a></li>
+      <li class="video" id="section-tv"><a onclick="MainUI.showTV(); return false;">TV</a></li> -->
     </ul>
   </div>
   <div id="content">

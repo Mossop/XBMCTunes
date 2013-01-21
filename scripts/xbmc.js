@@ -459,8 +459,8 @@ var XBMC = {
 
       // Queue up the rest of the songs
       songs.forEach(function(song) {
-        return promise.then(function() {
-          connection.send("Playlist.Add", {
+        promise.then(function() {
+          return connection.send("Playlist.Add", {
             playlistid: playlist.playlistid,
             item: {
               songid: song.songid
@@ -470,6 +470,28 @@ var XBMC = {
       });
 
       return promise;
+    });
+  },
+
+  queueTracks: function(songs) {
+    var connection = this._connection;
+
+    return this._getPlaylistForType("audio").then(function(playlist) {
+      var deferred = promise.defer();
+      deferred.resolve();
+
+      songs.forEach(function(song) {
+        deferred.promise.then(function() {
+          return connection.send("Playlist.Add", {
+            playlistid: playlist.playlistid,
+            item: {
+              songid: song.songid
+            }
+          });
+        });
+      });
+
+      return deferred.promise;
     });
   },
 
