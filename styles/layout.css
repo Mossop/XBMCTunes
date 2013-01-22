@@ -17,7 +17,7 @@ html, body {
   display: flex;
   flex-direction: row;
   align-items: center;
-  padding: 0 30px 0 30px;
+  padding: 10px 30px 10px 30px;
   background: linear-gradient(to top, #c7c7c7, #efefef);
   border-bottom: 1px solid #7b7b7b;
   height: 60px;
