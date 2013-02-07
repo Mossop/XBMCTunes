@@ -423,6 +423,10 @@ var XBMC = {
     });
   },
 
+  shutdown: function() {
+    return this._connection.send("Application.Quit");
+  },
+
   playPause: function() {
     if (!this._player)
       return;

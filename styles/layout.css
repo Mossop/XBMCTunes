@@ -17,7 +17,6 @@ html, body {
   display: flex;
   flex-direction: row;
   align-items: center;
-  padding: 10px 30px 10px 30px;
   background: linear-gradient(to top, #c7c7c7, #efefef);
   border-bottom: 1px solid #7b7b7b;
   height: 60px;
@@ -26,6 +25,7 @@ html, body {
 
 #controls {
   flex: 1;
+  padding: 10px 0 10px 30px;
 }
 
 #controls button {
@@ -46,7 +46,7 @@ button {
   border-top-color: #6c6e74;
   border-bottom-color: #ececec;
   border-radius: 5px;
-  padding: 5px;
+  padding: 15px 0 15px 0;
 }
 
 #playing-thumbnail {
@@ -88,8 +88,17 @@ button {
   height: 5px;
 }
 
-#search {
+#power {
+  height: 100%;
   flex: 1;
+}
+
+#shutdown {
+  padding: 2px 15px 2px 15px;
+  background-color: #c75050;
+  color: white;
+  text-align: center;
+  float: right;
 }
 
 #sectionbar {
