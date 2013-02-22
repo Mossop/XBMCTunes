@@ -215,7 +215,7 @@ var XBMC = {
     },
 
     "Player.OnPlay": function(params) {
-      clearTimeout(this._timeout);
+      this._stopSeekTracker();
 
       this._getPlayerProperties(params.player.playerid).then(function(properties) {
         properties.state = "playing";
@@ -231,7 +231,7 @@ var XBMC = {
 
         XBMC._player.properties = properties;
         XBMC._notifyPlaying();
-        XBMC._timeout = setTimeout(XBMC._updateSeekPosition.bind(XBMC), 1000);
+        XBMC._startSeekTracker();
       });
     },
 
@@ -265,6 +265,19 @@ var XBMC = {
 
   _timeout: null,
   _timeoutCount: 0,
+
+  _startSeekTracker: function() {
+    this._stopSeekTracker();
+
+    this._timeout = setTimeout(this._updateSeekPosition.bind(this), 1000);
+  },
+
+  _stopSeekTracker: function() {
+    if (!this._timeout)
+      return;
+    clearTimeout(this._timeout);
+  },
+
   _updateSeekPosition: function() {
     this._timeout = null;
     if (this._player.properties.state != "playing")
@@ -283,7 +296,7 @@ var XBMC = {
 
     this._notifyPlaying();
 
-    this._timeout = setTimeout(this._updateSeekPosition.bind(this), 1000);
+    this._startSeekTracker();
 
     this._timeoutCount++;
     if (this._timeoutCount == 10) {
@@ -291,10 +304,9 @@ var XBMC = {
         if (XBMC._player.properties.state != "playing")
           return;
         XBMC._timeoutCount = 0;
-        clearTimeout(XBMC._timeout)
         XBMC._player.properties.time = properties.time;
         XBMC._notifyPlaying();
-        XBMC._timeout = setTimeout(XBMC._updateSeekPosition.bind(XBMC), 1000);
+        XBMC._startSeekTracker();
       });
     }
   },
@@ -379,7 +391,7 @@ var XBMC = {
         type: player.properties.type
       }).then(function() {
         player.properties.item = XBMC._playlist.items[player.properties.position];
-        XBMC._timeout = setTimeout(XBMC._updateSeekPosition.bind(XBMC), 1000);
+        XBMC._startSeekTracker();
       });
     }
   },
