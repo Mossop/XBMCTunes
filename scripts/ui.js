@@ -431,9 +431,12 @@ function parseArgs() {
 
 function init() {
   var args = parseArgs();
-  var host = "host" in args ? args.host : location.hostname;
+  var host = "host" in args ? args.host : location.host;
+  var parts = host.split(":");
+  host = parts[0];
+  var port = (parts.length) > 1 ? parts[1] : 80;
 
-  XBMC.init(host).then(function() {
+  XBMC.init(host, port).then(function() {
     document.getElementById("connecting").classList.add("hidden");
     MainUI.init();
     NowPlaying.init();

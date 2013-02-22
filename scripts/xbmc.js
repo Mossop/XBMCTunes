@@ -133,16 +133,18 @@ var XBMC = {
   _player: null,
   _playlist: null,
   _host: null,
+  _port: null,
 
   _playlistListeners: [],
   _playbackListeners: [],
 
-  init: function(host, port) {
+  init: function(host, webPort, wsPort) {
     this._host = host;
-    if (!port)
-      port = 9090;
+    this._port = webPort ? webPort : 80;
+    if (!wsPort)
+      wsPort = 9090;
 
-    return openConnection("ws://" + host + ":" + port + "/jsonrpc").then(function(connection) {
+    return openConnection("ws://" + host + ":" + wsPort + "/jsonrpc").then(function(connection) {
       XBMC._connection = connection;
       connection.addNotificationListener(XBMC._notificationCallback.bind(XBMC));
       return XBMC._findActivePlayer();
@@ -409,7 +411,7 @@ var XBMC = {
   },
 
   decodeImage: function(image) {
-    return "http://" + this._host + "/image/" + encodeURI(image);
+    return "http://" + this._host + ":" + this._port + "/image/" + encodeURI(image);
   },
 
   _getPlaylistForType: function(type) {
