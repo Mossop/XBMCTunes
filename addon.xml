@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<addon
+  id="webinterface.xbmctunes"
+  version="1.0.0"
+  name="XBMC Tunes"
+  provider-name="Fractalbrew Labs">
+  <requires>
+    <import addon="xbmc.gui" version="4.0.0"/>
+    <import addon="xbmc.json" version="6.0.0"/>
+  </requires>
+  <extension point="xbmc.gui.webinterface"/>
+  <extension point="xbmc.addon.metadata">
+    <summary lang="en">XBMCTunes</summary>
+    <description lang="en">An iTunes-esque webinterface for XBMC</description>
+    <platform>all</platform>
+  </extension>
+</addon>
