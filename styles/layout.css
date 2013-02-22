@@ -46,7 +46,8 @@ button {
   border-top-color: #6c6e74;
   border-bottom-color: #ececec;
   border-radius: 5px;
-  padding: 15px 0 15px 0;
+  padding: 5px;
+  margin: 10px 0 10px 0;
 }
 
 #playing-thumbnail {
