@@ -406,10 +406,24 @@ var XBMC = {
       var player = players[0];
 
       return XBMC._getPlayerProperties(player.playerid).then(function(properties) {
-        properties.state = "playing";
-        player.properties = properties;
+        var deferred = promise.defer();
 
-        return XBMC._setPlayer(player);
+        setTimeout(function() {
+          XBMC._getPlayerProperties(player.playerid).then(function(newProperties) {
+            if (newProperties.time.milliseconds == properties.time.milliseconds &&
+                newProperties.time.seconds == properties.time.seconds)
+              newProperties.state = "paused";
+            else
+              newProperties.state = "playing";
+            player.properties = newProperties;
+
+            XBMC._setPlayer(player).then(function() {
+              deferred.resolve();
+            });
+          });
+        }, 100);
+
+        return deferred.promise;
       });
     });
   },
