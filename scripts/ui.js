@@ -414,8 +414,26 @@ var MainUI = {
   }
 };
 
+function parseArgs() {
+  var args = {};
+  var search = location.search;
+  if (search.length > 0) {
+    search = search.substring(1);
+    var parts = search.split("&");
+    for (var i = 0; i < parts.length; i++) {
+      var part = parts[i].split("=");
+      args[decodeURIComponent(part[0])] = decodeURIComponent(part[1]);
+    }
+  }
+
+  return args;
+}
+
 function init() {
-  XBMC.init("officepi").then(function() {
+  var args = parseArgs();
+  var host = "host" in args ? args.host : location.hostname;
+
+  XBMC.init(host).then(function() {
     document.getElementById("connecting").classList.add("hidden");
     MainUI.init();
     NowPlaying.init();
