@@ -224,6 +224,7 @@ button {
   border: 1px solid black;
   float: left;
   cursor: pointer;
+  box-shadow: 0 0 0.5em grey;
 }
 
 .album-header {
