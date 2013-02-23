@@ -212,9 +212,20 @@ button {
   padding-bottom: 20px;
 }
 
-.album {
+.albums .scrollbox {
+  padding-right: 20px;
+  padding-top: 20px;
+}
+
+.tracks .album {
   clear: left;
   padding: 20px 20px 0 20px;
+}
+
+.albums .album {
+  padding-left: 20px;
+  padding-bottom: 20px;
+  float: left;
 }
 
 .album-thumbnail {
@@ -222,9 +233,12 @@ button {
   width: 128px;
   height: 128px;
   border: 1px solid black;
-  float: left;
   cursor: pointer;
   box-shadow: 0 0 0.5em grey;
+}
+
+.tracks .album-thumbnail {
+  float: left;
 }
 
 .album-header {
@@ -238,6 +252,15 @@ button {
   font-weight: bold;
   padding-right: 10px;
   cursor: pointer;
+}
+
+.albums .album-title,
+.albums .album-artist {
+  margin-top: 0.5em;
+  width: 128px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
 }
 
 .album-artist {

@@ -568,7 +568,10 @@ var XBMC = {
     });
   },
 
-  getList: function(method, property, extraparams) {
+  getList: function(method, property, extraparams, sortkeys) {
+    if (!sortkeys)
+      sortkeys = ["label"];
+
     var params = {
       properties: ["thumbnail"],
       sort: {
@@ -593,9 +596,15 @@ var XBMC = {
           return str;
         }
 
-        a = normalise(a.label);
-        b = normalise(b.label);
-        return a.localeCompare(b);
+        for (var i = 0; i < sortkeys.length; i++) {
+          var aval = normalise(a[sortkeys[i]]);
+          var bval = normalise(b[sortkeys[i]]);
+          var diff = aval.localeCompare(bval);
+          if (diff != 0)
+            return diff;
+        }
+
+        return 0;
       });
     });
   },
@@ -611,10 +620,12 @@ var XBMC = {
   },
 
   getAlbums: function(filter) {
-    return this.getList("AudioLibrary.GetAlbums", "albums", {
-      properties: ["thumbnail", "displayartist"],
-      filter: filter
-    });
+    var params = {
+      properties: ["thumbnail", "displayartist"]
+    };
+    if (filter)
+      params.filter = filter;
+    return this.getList("AudioLibrary.GetAlbums", "albums", params, ["displayartist", "label"]);
   },
 
   getSong: function(id) {

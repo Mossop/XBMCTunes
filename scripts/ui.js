@@ -213,7 +213,9 @@ var MainUI = {
     for (var i = 0; i < last.length; i++)
       last[i].classList.remove("selected");
 
-    document.getElementById("section-" + id).classList.add("selected");
+    var section = document.getElementById("section-" + id);
+    section.classList.add("selected");
+    this.library.parentNode.className = section.dataset.libclass;
   },
 
   showArtists: function() {
@@ -355,6 +357,37 @@ var MainUI = {
   showAlbums: function() {
     this.highlightSection("albums");
     this.hideList();
+    this.library.parentNode.classList.add("loading");
+
+    return XBMC.getAlbums().then(this.populateAlbums.bind(this));
+  },
+
+  populateAlbums: function(albums) {
+    this.library.parentNode.classList.remove("loading");
+
+    albums.forEach(function(album) {
+      var div = makeEl("div", "album");
+
+      var thumb = makeEl("img", "album-thumbnail");
+      thumb.setAttribute("src", XBMC.decodeImage(album.thumbnail));
+      div.appendChild(thumb);
+      thumb.addEventListener("click", function() {
+        MainUI.playAlbum(album);
+      }, false);
+
+      var title = makeEl("p", "album-title");
+      title.textContent = album.label;
+      div.appendChild(title);
+      title.addEventListener("click", function() {
+        MainUI.playAlbum(album);
+      }, false);
+
+      var artist = makeEl("p", "album-artist");
+      artist.textContent = "By " + album.displayartist;
+      div.appendChild(artist);
+
+      this.library.appendChild(div);
+    }, this);
   },
 
   selectListItem: function(item, listitem) {
