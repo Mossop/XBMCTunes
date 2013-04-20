@@ -547,6 +547,9 @@ var XBMC = {
   },
 
   queueTracks: function(songs) {
+    if (songs.length == 0)
+      return;
+
     var connection = this._connection;
 
     return this._getPlaylistForType("audio").then(function(playlist) {

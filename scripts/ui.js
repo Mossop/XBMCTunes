@@ -233,6 +233,9 @@ var MainUI = {
 
     function fillTracks(div, album) {
       XBMC.getSongs({ albumid: album.albumid }).then(function(songs) {
+        if (songs.length == 0)
+          return;
+
         var tracks = makeEl("ol", "album-tracks");
         var lastDisc = songs[0].disc;
 
